@@ -147,7 +147,7 @@ Interactive docs are available at `/docs` while the server is running.
 
 ## Author
 
-Your Name — [GitHub]([https://github.com/your-username](https://github.com/toqa-ehab))
+[GitHub]((https://github.com/toqa-ehab))
 
 ## License
 
