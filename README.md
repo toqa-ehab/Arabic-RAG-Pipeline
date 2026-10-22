@@ -2,6 +2,8 @@
 
 An Arabic Retrieval-Augmented Generation (RAG) system. Ask a question in Arabic, and the system retrieves the most relevant passages from a PDF document and uses an LLM to generate an answer grounded in them. The model runs in a Kaggle notebook, is served through a FastAPI backend, and is exposed to a web UI through an ngrok tunnel.
 
+![Mujeeb web UI: Arabic question box, suggested questions, and question history](assets/screenshot.png)
+
 ## Features
 
 - Arabic-first retrieval using an Arabic embedding model (GATE-AraBERT)
@@ -9,7 +11,7 @@ An Arabic Retrieval-Augmented Generation (RAG) system. Ask a question in Arabic,
 - Answer generation with Mistral-Nemo-Instruct
 - Shows the retrieved chunks next to each answer, so you can verify the source
 - Responsive RTL web interface with dark/light themes
-- Question history, copy answer, and text-to-speech (read aloud)
+- Suggested questions, question history, copy answer, and text-to-speech (read aloud)
 
 ## How it works
 
@@ -26,9 +28,9 @@ User question ──► embed query ──► top-k similar chunks ◄───�
 ```
 
 1. **Extract**: text is read from the PDF with PyPDF2.
-2. **Chunk**: the text is split into overlapping word windows (50 words, 5 overlap in the current notebook).
+2. **Chunk**: the text is split into overlapping word windows (50 words with a 5-word overlap in the current notebook).
 3. **Embed**: each chunk is encoded with `Omartificial-Intelligence-Space/GATE-AraBert-v0` (normalized vectors).
-4. **Index**: vectors are stored in a FAISS `IndexFlatIP` (inner product = cosine similarity on normalized vectors).
+4. **Index**: vectors are stored in a FAISS `IndexFlatIP` (inner product equals cosine similarity on normalized vectors).
 5. **Retrieve**: the question is embedded and the top 3 chunks are returned.
 6. **Generate**: the chunks and the question are placed in an Arabic prompt and sent to `mistralai/Mistral-Nemo-Instruct-2407`.
 7. **Serve**: a FastAPI `/ask` endpoint returns the answer and the chunks to the UI.
@@ -50,8 +52,10 @@ User question ──► embed query ──► top-k similar chunks ◄───�
 
 ```
 .
-├── notebook.ipynb   # RAG pipeline + FastAPI server (run on Kaggle)
-├── index.html       # Web UI
+├── assets/
+│   └── screenshot.png   # UI screenshot used in this README
+├── notebook.ipynb       # RAG pipeline + FastAPI server (run on Kaggle)
+├── index.html           # Web UI
 └── README.md
 ```
 
@@ -59,7 +63,7 @@ User question ──► embed query ──► top-k similar chunks ◄───�
 
 ### Requirements
 
-- A Kaggle account with GPU enabled and **Internet turned on** (Notebook settings)
+- A Kaggle account with a GPU enabled and **Internet turned on** (Notebook settings). The 12B model needs about 24 GB of GPU memory in fp16, so choose **GPU T4 x2**.
 - A free [ngrok](https://ngrok.com) account and authtoken
 - A PDF to query (the example uses an Arabic machine learning document)
 
@@ -67,7 +71,7 @@ User question ──► embed query ──► top-k similar chunks ◄───�
 
 1. Upload `notebook.ipynb` to Kaggle.
 2. Upload your PDF as a Kaggle dataset and set `path` in the notebook to its location.
-3. In Kaggle, go to **Add-ons → Secrets** and add a secret named `NGROK_TOKEN` with your ngrok authtoken.
+3. In Kaggle, go to **Add-ons → Secrets**, add a secret named `NGROK_TOKEN` with your ngrok authtoken, and make sure it is attached to the notebook.
 
 ### 2. Run the cells in order
 
@@ -76,11 +80,11 @@ Run the whole pipeline **in the same session and in order**:
 1. Install dependencies and load the LLM
 2. Define `generate_text`
 3. Load the embedding model and define the helper functions (`text_from_pdf`, `chunk_text`, `embed_chunks`, `faiss_index`, `search_index`)
-4. Build the chunks, embeddings and FAISS index
+4. Build the chunks, embeddings, and FAISS index
 5. Define the FastAPI app and start the server in a background thread
 6. Open the ngrok tunnel and copy the printed public URL
 
-> The API reads `embedding_model`, `index`, `chunks`, `search_index` and `generate_text` from the notebook's memory, so all earlier cells must have been run first.
+> The API reads `embedding_model`, `index`, `chunks`, `search_index`, and `generate_text` from the notebook's memory, so all earlier cells must have been run first.
 
 ### 3. Connect the UI
 
@@ -127,17 +131,20 @@ Interactive docs are available at `/docs` while the server is running.
 - The ngrok URL changes every time the notebook session restarts, so `API_URL` must be updated.
 - The API only runs while the Kaggle session is active.
 - Generation with a 12B model is slow; expect several seconds per answer.
-- Some UI elements are placeholders: the voice input button is a simulation, and the "response time" and "RAG v2.4" labels in the UI are static text.
+- The `/ask` endpoint has no authentication. Don't share the ngrok URL publicly while the notebook is running.
+- Some UI elements are placeholders: the voice input button is a simulation, and the "response time" and "RAG v2.4" labels are static text.
 - Chunks are split by word count, not by sentence or paragraph, so retrieved passages may begin or end mid-sentence.
+- Retrieval quality has not been formally evaluated yet.
 
 ## Roadmap
 
 - Support uploading PDFs from the UI
 - Sentence-aware chunking
-- Use `max_new_tokens` and streaming responses for faster perceived speed
+- Set `max_new_tokens` and stream responses for faster perceived speed
 - Add source page numbers to the retrieved chunks
+- Add API key protection to the `/ask` endpoint
 - Deploy the backend to a persistent host instead of a notebook
-- Evaluate retrieval quality (e.g., hit rate on a labelled question set)
+- Evaluate retrieval quality (for example, hit rate on a labelled question set)
 
 ## Acknowledgements
 
@@ -147,7 +154,7 @@ Interactive docs are available at `/docs` while the server is running.
 
 ## Author
 
-[GitHub]((https://github.com/toqa-ehab))
+Built by [Toqa Ehab](https://github.com/toqa-ehab) during the Generative AI Internship at Tips Hindawi / Edrak for AI.
 
 ## License
 
