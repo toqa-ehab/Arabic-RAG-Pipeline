@@ -147,8 +147,8 @@ Interactive docs are available at `/docs` while the server is running.
 
 ## Author
 
-Your Name — [GitHub](https://github.com/your-username)
+Your Name — [GitHub]([https://github.com/your-username](https://github.com/toqa-ehab))
 
 ## License
 
-Add a license of your choice (for example MIT). Note that the models used have their own licenses; check them before commercial use.
+MIT
